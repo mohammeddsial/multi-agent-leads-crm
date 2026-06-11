@@ -1,0 +1,206 @@
+{
+  "name": "Agent 3 - waraqlabs.com Upwork Scout",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [{"field": "hours", "hoursInterval": 3}]
+        }
+      },
+      "id": "schedule-trigger",
+      "name": "Every 3 Hours",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://www.upwork.com/ab/feed/jobs/rss?q=react%20native%20rebuild%20OR%20fix%20buggy%20app%20OR%20technical%20debt&sort=recency"
+      },
+      "id": "upwork-rss",
+      "name": "Fetch Upwork Jobs Feed",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.1,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const staticData = $getWorkflowStaticData('global');\nif (!staticData.seenUpworkIds) staticData.seenUpworkIds = [];\nconst seen = staticData.seenUpworkIds;\n\nconst items = $input.all();\nconst newItems = [];\n\nfor (const item of items) {\n  const id = item.json.link || item.json.guid;\n  if (!id || seen.includes(id)) continue;\n  seen.push(id);\n  newItems.push({\n    json: {\n      id: id,\n      title: item.json.title || '',\n      content: item.json.contentSnippet || item.json.content || '',\n      link: item.json.link || '',\n      pubDate: item.json.pubDate || item.json.isoDate || ''\n    }\n  });\n}\n\nif (seen.length > 5000) staticData.seenUpworkIds = seen.slice(-5000);\n\nreturn newItems;"
+      },
+      "id": "dedup-code",
+      "name": "Deduplicate Jobs",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $input.all().length }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "if-new-jobs",
+      "name": "Have New Jobs?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [850, 300]
+    },
+    {
+      "parameters": {
+        "batchSize": 1,
+        "options": {}
+      },
+      "id": "loop-over-items",
+      "name": "Loop Over Items",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [1050, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ contents: [ { parts: [ { text: `You are a lead qualification and personalization engine for waraqlabs.com. waraqlabs.com provides transparent, scalable custom mobile and web development, fixing buggy MVPs, untangling technical debt, and building complex iOS and Android apps the right way. Ideal customer profile: a startup with a live MVP plagued by crashes, slow performance, fragile code, or mounting tech debt; a company missing engineering deadlines and hiring mid or senior full-stack or mobile engineers, signalling an immediate resource gap; a non-technical founder needing a reliable, transparent development partner to take over a broken project from a previous agency or freelancer. Evaluate this Upwork job posting. Title: ${$json.title} Description: ${$json.content} Link: ${$json.link} If this looks like a strong fit with active intent, output ONLY a valid JSON object (double-quoted keys and string values, no markdown fences) with fields: qualified set to true, score from 1 to 10, company_name if detectable else null, pain_point as one sentence describing the likely engineering issue, personalized_audit as a concise constructive roast plus pitch for waraqlabs.com transparent senior-led development in max 3 sentences ready to send, suggested_subject as an email subject line, missing_info as anything else needed or null. If this does not fit, output ONLY a JSON object with qualified set to false and no other fields.` } ] } ] }) }}",
+        "options": {}
+      },
+      "id": "gemini-api",
+      "name": "Gemini Qualify & Personalize",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1250, 300],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "1",
+          "name": "Gemini API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const response = $input.first().json;\nlet raw = '';\ntry {\n  raw = response.candidates[0].content.parts[0].text;\n} catch (e) {\n  return { qualified: false, error: 'bad response' };\n}\nraw = raw.replace(/```json/g, '').replace(/```/g, '').trim();\ntry {\n  return JSON.parse(raw);\n} catch (e) {\n  return { qualified: false, error: 'parse error', raw: raw };\n}"
+      },
+      "id": "parse-gemini",
+      "name": "Parse Gemini JSON",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1450, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.qualified }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": false
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "if-qualified",
+      "name": "Is Qualified?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1650, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://webhook.site/your-unique-url",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ agent: 'waraqlabs.com', score: $json.score, company_name: $json.company_name, pain_point: $json.pain_point, personalized_audit: $json.personalized_audit, suggested_subject: $json.suggested_subject, source_url: $('Deduplicate Jobs').item.json.link }) }}",
+        "options": {}
+      },
+      "id": "delivery-webhook",
+      "name": "Post to Webhook",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1850, 200]
+    },
+    {
+      "parameters": {
+        "amount": 7,
+        "unit": "seconds"
+      },
+      "id": "wait-before-next",
+      "name": "Wait Before Next Request",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [1850, 450]
+    }
+  ],
+  "connections": {
+    "Every 3 Hours": {
+      "main": [[ { "node": "Fetch Upwork Jobs Feed", "type": "main", "index": 0 } ]]
+    },
+    "Fetch Upwork Jobs Feed": {
+      "main": [[ { "node": "Deduplicate Jobs", "type": "main", "index": 0 } ]]
+    },
+    "Deduplicate Jobs": {
+      "main": [[ { "node": "Have New Jobs?", "type": "main", "index": 0 } ]]
+    },
+    "Have New Jobs?": {
+      "main": [
+        [{ "node": "Loop Over Items", "type": "main", "index": 0 }],
+        []
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [{ "node": "Gemini Qualify & Personalize", "type": "main", "index": 0 }]
+      ]
+    },
+    "Gemini Qualify & Personalize": {
+      "main": [[ { "node": "Parse Gemini JSON", "type": "main", "index": 0 } ]]
+    },
+    "Parse Gemini JSON": {
+      "main": [[ { "node": "Is Qualified?", "type": "main", "index": 0 } ]]
+    },
+    "Is Qualified?": {
+      "main": [
+        [{ "node": "Post to Webhook", "type": "main", "index": 0 }],
+        [{ "node": "Wait Before Next Request", "type": "main", "index": 0 }]
+      ]
+    },
+    "Post to Webhook": {
+      "main": [[ { "node": "Wait Before Next Request", "type": "main", "index": 0 } ]]
+    },
+    "Wait Before Next Request": {
+      "main": [[ { "node": "Loop Over Items", "type": "main", "index": 0 } ]]
+    }
+  }
+}
