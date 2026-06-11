@@ -1,10 +1,10 @@
-# Create a .gitignore so you never accidentally commit secrets or large Docker volumes
-@"
 # Ignore Docker volumes and runtime data
 postgres_data/
 n8n_data/
 backups/
 
-# Ignore environment secrets (if you decide to move the key to an .env file)
+# Ignore environment secrets
 .env
-"@ | Out-File -FilePath .gitignore -Encoding utf8
+
+# Node dependencies
+mcp-server/node_modules/
