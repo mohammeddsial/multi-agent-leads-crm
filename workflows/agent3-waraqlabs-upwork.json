@@ -15,7 +15,7 @@
     },
     {
       "parameters": {
-        "url": "https://www.upwork.com/ab/feed/jobs/rss?q=react%20native%20rebuild%20OR%20fix%20buggy%20app%20OR%20technical%20debt&sort=recency"
+        "url": "https://www.reddit.com/r/forhire/new/.rss"
       },
       "id": "upwork-rss",
       "name": "Fetch Upwork Jobs Feed",
@@ -81,7 +81,7 @@
         "genericAuthType": "httpHeaderAuth",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ contents: [ { parts: [ { text: `You are a lead qualification and personalization engine for waraqlabs.com. waraqlabs.com provides transparent, scalable custom mobile and web development, fixing buggy MVPs, untangling technical debt, and building complex iOS and Android apps the right way. Ideal customer profile: a startup with a live MVP plagued by crashes, slow performance, fragile code, or mounting tech debt; a company missing engineering deadlines and hiring mid or senior full-stack or mobile engineers, signalling an immediate resource gap; a non-technical founder needing a reliable, transparent development partner to take over a broken project from a previous agency or freelancer. Evaluate this Upwork job posting. Title: ${$json.title} Description: ${$json.content} Link: ${$json.link} If this looks like a strong fit with active intent, output ONLY a valid JSON object (double-quoted keys and string values, no markdown fences) with fields: qualified set to true, score from 1 to 10, company_name if detectable else null, pain_point as one sentence describing the likely engineering issue, personalized_audit as a concise constructive roast plus pitch for waraqlabs.com transparent senior-led development in max 3 sentences ready to send, suggested_subject as an email subject line, missing_info as anything else needed or null. If this does not fit, output ONLY a JSON object with qualified set to false and no other fields.` } ] } ] }) }}",
+        "jsonBody": "={{ JSON.stringify({ contents: [ { parts: [ { text: `You are a lead qualification and personalization engine for waraqlabs.com. waraqlabs.com provides transparent, scalable custom mobile and web development, fixing buggy MVPs, untangling technical debt, and building complex iOS and Android apps the right way. Ideal customer profile: a startup with a live MVP plagued by crashes, slow performance, fragile code, or mounting tech debt; a company missing engineering deadlines and hiring mid or senior full-stack or mobile engineers, signalling an immediate resource gap; a non-technical founder needing a reliable, transparent development partner to take over a broken project from a previous agency or freelancer. Evaluate this hiring post from r/forhire. Title: ${$json.title} Description: ${$json.content} Link: ${$json.link} If this looks like a strong fit with active intent, output ONLY a valid JSON object (double-quoted keys and string values, no markdown fences) with fields: qualified set to true, score from 1 to 10, company_name if detectable else null, pain_point as one sentence describing the likely engineering issue, personalized_audit as a concise constructive roast plus pitch for waraqlabs.com transparent senior-led development in max 3 sentences ready to send, suggested_subject as an email subject line, missing_info as anything else needed or null. If this does not fit, output ONLY a JSON object with qualified set to false and no other fields.` } ] } ] }) }}",
         "options": {}
       },
       "id": "gemini-api",
