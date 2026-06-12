@@ -55,7 +55,7 @@ For each file in `workflows/`:
 |---|---|---|---|
 | `workflows/agent1-shersial-producthunt.json` | Product Hunt RSS feed | every 6 hours | shersial.com (premium Webflow/design redesigns) |
 | `workflows/agent2-getdesign-reddit.json` | Reddit (r/saas, r/smallbusiness, r/startups) | every hour | getdesign.io (productized design subscriptions) |
-| `workflows/agent3-waraqlabs-upwork.json` | Reddit r/forhire RSS feed | every 3 hours | waraqlabs.com (custom mobile/web dev, tech-debt fixes) |
+| `workflows/agent3-waraqlabs-reddit.json` | Reddit r/forhire RSS feed | every 3 hours | waraqlabs.com (custom mobile/web dev, tech-debt fixes) |
 | `workflows/agent4-getdesign-cms.json` | Reddit (r/Webflow, r/Wordpress, r/shopify, r/squarespace, r/Wix, r/webdev, r/web_design) | every 2 hours | getdesign.io (CMS redesigns/migrations across any platform) |
 
 Each workflow follows the same pipeline: **fetch → deduplicate (persisted to a JSON file in the n8n data volume) → Gemini qualification & personalization → filter qualified leads → insert into Postgres `leads` table → POST to webhook**.

@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS leads (
   pain_point TEXT,
   personalized_audit TEXT,
   suggested_subject TEXT,
-  source_url TEXT UNIQUE NOT NULL,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+  source_url TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  UNIQUE (source_url, agent)
 );

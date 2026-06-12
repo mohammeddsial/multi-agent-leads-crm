@@ -138,7 +138,7 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "INSERT INTO leads (agent, score, company_name, platform, pain_point, personalized_audit, suggested_subject, source_url) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) ON CONFLICT (source_url) DO NOTHING",
+        "query": "INSERT INTO leads (agent, score, company_name, platform, pain_point, personalized_audit, suggested_subject, source_url) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) ON CONFLICT (source_url, agent) DO NOTHING",
         "options": {
           "queryReplacement": "={{ ['shersial.com', $json.score, $json.company_name, null, $json.pain_point, $json.personalized_audit, $json.suggested_subject, $('Deduplicate Launches').item.json.link] }}"
         }
