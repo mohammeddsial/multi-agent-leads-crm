@@ -137,6 +137,26 @@
     },
     {
       "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO leads (agent, score, company_name, platform, pain_point, personalized_audit, suggested_subject, source_url) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) ON CONFLICT (source_url) DO NOTHING",
+        "options": {
+          "queryReplacement": "={{ ['waraqlabs.com', $json.score, $json.company_name, null, $json.pain_point, $json.personalized_audit, $json.suggested_subject, $('Deduplicate Jobs').item.json.link] }}"
+        }
+      },
+      "id": "postgres-insert",
+      "name": "Insert Postgres Lead",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [1850, 100],
+      "credentials": {
+        "postgres": {
+          "id": "2",
+          "name": "Postgres CRM"
+        }
+      }
+    },
+    {
+      "parameters": {
         "method": "POST",
         "url": "https://webhook.site/your-unique-url",
         "sendBody": true,
@@ -148,7 +168,7 @@
       "name": "Post to Webhook",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [1850, 200]
+      "position": [2050, 100]
     },
     {
       "parameters": {
@@ -192,9 +212,12 @@
     },
     "Is Qualified?": {
       "main": [
-        [{ "node": "Post to Webhook", "type": "main", "index": 0 }],
+        [{ "node": "Insert Postgres Lead", "type": "main", "index": 0 }],
         [{ "node": "Wait Before Next Request", "type": "main", "index": 0 }]
       ]
+    },
+    "Insert Postgres Lead": {
+      "main": [[ { "node": "Post to Webhook", "type": "main", "index": 0 } ]]
     },
     "Post to Webhook": {
       "main": [[ { "node": "Wait Before Next Request", "type": "main", "index": 0 } ]]
