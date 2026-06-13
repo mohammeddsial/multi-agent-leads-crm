@@ -161,7 +161,7 @@
         "url": "={{ $env.DISCORD_WEBHOOK_URL }}",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ content: `🎯 **New lead — getdesign.io** (score ${$json.score}/10)\n**Company:** ${$json.company_name || 'N/A'}\n**Pain point:** ${$json.pain_point}\n**Suggested subject:** ${$json.suggested_subject}\n**Pitch:** ${$json.personalized_audit}\n🔗 ${$('Deduplicate Posts').item.json.permalink}` }) }}",
+        "jsonBody": "={{ JSON.stringify({ content: `🎯 **New lead — getdesign.io** · score ${$json.score}/10\n**Company:** ${$json.company_name || 'N/A'}\n**Pain:** ${$json.pain_point}\n\n📋 **Draft reply (copy-paste):**\n${String.fromCharCode(96,96,96)}\n${$json.personalized_audit}\n${String.fromCharCode(96,96,96)}\n✉️ **Subject:** ${$json.suggested_subject}\n🔗 ${$('Deduplicate Posts').item.json.permalink}\n☑️ Mark contacted: http://localhost:5678/webhook/mark-contacted?agent=getdesign.io&url=${encodeURIComponent($('Deduplicate Posts').item.json.permalink)}` }) }}",
         "options": {}
       },
       "id": "notify-discord",

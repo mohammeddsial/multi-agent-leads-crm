@@ -1,0 +1,59 @@
+{
+  "name": "Mark Lead Contacted",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "GET",
+        "path": "mark-contacted",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Mark Contacted Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [250, 300],
+      "webhookId": "mark-contacted"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE leads SET status = $1 WHERE source_url = $2 AND agent = $3 RETURNING id, company_name, status",
+        "options": {
+          "queryReplacement": "={{ [ $json.query.status || 'contacted', $json.query.url, $json.query.agent ] }}"
+        }
+      },
+      "id": "pg-update",
+      "name": "Update Status",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [470, 300],
+      "credentials": {
+        "postgres": {
+          "id": "2",
+          "name": "Postgres CRM"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ $json.id ? `✅ Lead #${$json.id} (${$json.company_name || 'unknown'}) marked as ${$json.status}. You can close this tab.` : '⚠️ No matching lead found.' }}",
+        "options": {}
+      },
+      "id": "respond",
+      "name": "Respond",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [690, 300]
+    }
+  ],
+  "connections": {
+    "Mark Contacted Webhook": {
+      "main": [[ { "node": "Update Status", "type": "main", "index": 0 } ]]
+    },
+    "Update Status": {
+      "main": [[ { "node": "Respond", "type": "main", "index": 0 } ]]
+    }
+  }
+}
