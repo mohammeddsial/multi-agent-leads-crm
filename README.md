@@ -28,16 +28,16 @@ In n8n: **Settings → Credentials → Add Credential → Header Auth**
 
 Each workflow writes qualified leads into a persistent `leads` table in the `n8n-postgres` database.
 
-1. Load the schema into the database:
-   ```powershell
-   docker exec -i n8n-postgres psql -U n8n -d n8n < db/schema.sql
+1. Load the schema into the database (run in `cmd.exe`, or use `Get-Content db/schema.sql | docker exec -i n8n-postgres psql -U n8n -d n8n` in PowerShell):
+   ```cmd
+   docker exec -i n8n-postgres psql -U n8n -d n8n < db\schema.sql
    ```
 2. In n8n: **Settings → Credentials → Add Credential → Postgres**
    - **Name:** `Postgres CRM` (must match exactly — the workflows reference it by this name)
    - **Host:** `postgres`
    - **Database:** `n8n`
    - **User:** `n8n`
-   - **Password:** `n8n_secure_password`
+   - **Password:** the `POSTGRES_PASSWORD` value from `docker-compose.yml`
    - **Port:** `5432`
    - **SSL:** disabled
 
