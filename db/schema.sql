@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS leads (
   pain_point TEXT,
   personalized_audit TEXT,
   suggested_subject TEXT,
+  email TEXT,
   source_url TEXT NOT NULL,
   -- Outreach pipeline status: new -> contacted -> replied -> won / lost
   status TEXT NOT NULL DEFAULT 'new',

@@ -72,7 +72,7 @@
   <thead>
     <tr>
       <th>#</th><th>Agent</th><th>Score</th><th>Company</th><th>Pain / Pitch</th>
-      <th>Source</th><th>Status</th><th>When</th>
+      <th>Email</th><th>Source</th><th>Status</th><th>When</th>
     </tr>
   </thead>
   <tbody id="rows"></tbody>
@@ -122,6 +122,7 @@ async function load(){
       <td class="score">${l.score??''}</td>
       <td>${esc(l.company_name||'—')}</td>
       <td>${pitch}</td>
+      <td>${l.email ? `<a href="mailto:${esc(l.email)}">${esc(l.email)}</a>` : '<span class="muted">—</span>'}</td>
       <td><a href="${esc(l.source_url)}" target="_blank">open ↗</a></td>
       <td>${badge}<br>${sel}</td>
       <td class="muted">${when(l.created_at)}</td>

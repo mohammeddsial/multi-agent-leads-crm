@@ -49,7 +49,7 @@ app.get('/api/leads', async (req, res) => {
     const where = clauses.length ? `WHERE ${clauses.join(' AND ')}` : '';
     const { rows } = await pool.query(
       `SELECT id, agent, score, company_name, platform, pain_point, personalized_audit,
-              suggested_subject, source_url, status, created_at
+              suggested_subject, email, source_url, status, created_at
          FROM leads ${where} ORDER BY created_at DESC`,
       params
     );

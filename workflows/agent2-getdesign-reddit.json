@@ -81,7 +81,7 @@
         "genericAuthType": "httpHeaderAuth",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ contents: [ { parts: [ { text: `You are a lead qualification and personalization engine for getdesign.io. getdesign.io offers productized UI/UX design subscriptions (Webflow/Framer) and digital marketing. Ideal customer profile: early-stage SaaS founders needing marketing sites, agencies overloaded with design work, small business owners stuck on DIY builders, anyone saying need a designer or Webflow help. Evaluate this Reddit post. Title: ${$json.title} Body: ${$json.selftext} If this person fits our ICP and has high intent, output ONLY a valid JSON object (double-quoted keys and string values, no markdown fences) with fields: qualified set to true, score from 1 to 10, company_name if detectable else null, pain_point as one sentence, personalized_audit as a concise constructive roast plus pitch for the getdesign.io subscription in max 3 sentences ready to send, suggested_subject as an email subject line, missing_info as anything else needed or null. If this person does not fit, output ONLY a JSON object with qualified set to false and no other fields.` } ] } ] }) }}",
+        "jsonBody": "={{ JSON.stringify({ contents: [ { parts: [ { text: `You are a lead qualification and personalization engine for getdesign.io. getdesign.io offers productized UI/UX design subscriptions (Webflow/Framer) and digital marketing. Ideal customer profile: early-stage SaaS founders needing marketing sites, agencies overloaded with design work, small business owners stuck on DIY builders, anyone saying need a designer or Webflow help. Evaluate this Reddit post. Title: ${$json.title} Body: ${$json.selftext} If this person fits our ICP and has high intent, output ONLY a valid JSON object (double-quoted keys and string values, no markdown fences) with fields: qualified set to true, score from 1 to 10, company_name if detectable else null, pain_point as one sentence, personalized_audit as a concise constructive roast plus pitch for the getdesign.io subscription in max 3 sentences ready to send, suggested_subject as an email subject line, email as a contact email address only if one is explicitly written in the post text else null, missing_info as anything else needed or null. If this person does not fit, output ONLY a JSON object with qualified set to false and no other fields.` } ] } ] }) }}",
         "options": {}
       },
       "id": "gemini-api",
@@ -138,9 +138,9 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "INSERT INTO leads (agent, score, company_name, platform, pain_point, personalized_audit, suggested_subject, source_url) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) ON CONFLICT (source_url, agent) DO NOTHING",
+        "query": "INSERT INTO leads (agent, score, company_name, platform, pain_point, personalized_audit, suggested_subject, email, source_url) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) ON CONFLICT (source_url, agent) DO NOTHING",
         "options": {
-          "queryReplacement": "={{ ['getdesign.io', $json.score, $json.company_name, null, $json.pain_point, $json.personalized_audit, $json.suggested_subject, $('Deduplicate Posts').item.json.permalink] }}"
+          "queryReplacement": "={{ ['getdesign.io', $json.score, $json.company_name, null, $json.pain_point, $json.personalized_audit, $json.suggested_subject, $json.email, $('Deduplicate Posts').item.json.permalink] }}"
         }
       },
       "id": "postgres-insert",
