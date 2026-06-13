@@ -5,8 +5,8 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_USER: n8n
-      POSTGRES_PASSWORD: n8n_secure_password   # Change this to something strong
       POSTGRES_DB: n8n
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -27,7 +27,7 @@ services:
       - DB_POSTGRESDB_PORT=5432
       - DB_POSTGRESDB_DATABASE=n8n
       - DB_POSTGRESDB_USER=n8n
-      - DB_POSTGRESDB_PASSWORD=n8n_secure_password   # Same as above
+      - DB_POSTGRESDB_PASSWORD=${POSTGRES_PASSWORD}
       - N8N_ENCRYPTION_KEY=${N8N_ENCRYPTION_KEY}
     volumes:
       - n8n_data:/home/node/.n8n

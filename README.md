@@ -10,10 +10,16 @@ This repository includes a minimal MCP server scaffold in `mcp-server/`, plus a 
 docker compose up -d
 ```
 
-This starts `n8n-postgres`, `n8n` (UI at http://localhost:5678), and `mcp-server`. n8n reads `N8N_ENCRYPTION_KEY` from `.env` (not committed — generate your own with the snippet below if it doesn't exist):
+This starts `n8n-postgres`, `n8n` (UI at http://localhost:5678), and `mcp-server`. Both `docker-compose.yml` services read `N8N_ENCRYPTION_KEY` and `POSTGRES_PASSWORD` from `.env` (not committed — create your own with the snippet below if it doesn't exist):
 
 ```powershell
 [System.BitConverter]::ToString((New-Object byte[] 32 | ForEach-Object { (New-Object System.Security.Cryptography.RNGCryptoServiceProvider).GetBytes($_); $_ })).Replace('-','').ToLower()
+```
+
+Then create a `.env` file in the project root:
+```
+N8N_ENCRYPTION_KEY=<value from the snippet above>
+POSTGRES_PASSWORD=<choose a password without special shell/URL characters, e.g. alphanumeric only>
 ```
 
 ### 2. Create the Gemini API credential
@@ -37,7 +43,7 @@ Each workflow writes qualified leads into a persistent `leads` table in the `n8n
    - **Host:** `postgres`
    - **Database:** `n8n`
    - **User:** `n8n`
-   - **Password:** the `POSTGRES_PASSWORD` value from `docker-compose.yml`
+   - **Password:** the `POSTGRES_PASSWORD` value from your `.env` file
    - **Port:** `5432`
    - **SSL:** disabled
 
