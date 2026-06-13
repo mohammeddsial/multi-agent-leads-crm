@@ -24,22 +24,41 @@ In n8n: **Settings → Credentials → Add Credential → Header Auth**
 - **Header Name:** `x-goog-api-key`
 - **Header Value:** your free API key from [Google AI Studio](https://aistudio.google.com)
 
-### 3. Import the agent workflows
+### 3. Create the Postgres CRM credential
+
+Each workflow writes qualified leads into a persistent `leads` table in the `n8n-postgres` database.
+
+1. Load the schema into the database:
+   ```powershell
+   docker exec -i n8n-postgres psql -U n8n -d n8n < db/schema.sql
+   ```
+2. In n8n: **Settings → Credentials → Add Credential → Postgres**
+   - **Name:** `Postgres CRM` (must match exactly — the workflows reference it by this name)
+   - **Host:** `postgres`
+   - **Database:** `n8n`
+   - **User:** `n8n`
+   - **Password:** `n8n_secure_password`
+   - **Port:** `5432`
+   - **SSL:** disabled
+
+### 4. Import the agent workflows
 
 For each file in `workflows/`:
 
 1. **Workflows → Add workflow → ⋯ menu → Import from File** (or paste the JSON via Import from Clipboard).
 2. Click the **"Gemini Qualify & Personalize"** node and select the **Gemini API** credential (it will show a warning until you do).
-3. Click the **"Post to Webhook"** node and replace `https://webhook.site/your-unique-url` with a real destination — get a free test URL from [webhook.site](https://webhook.site), or point it at a Slack incoming webhook / Notion automation later.
-4. Click **Test Workflow** to run it once manually, then toggle **Active** to enable the schedule.
+3. Click the **"Insert Postgres Lead"** node and select the **Postgres CRM** credential.
+4. Click the **"Post to Webhook"** node and replace `https://webhook.site/your-unique-url` with a real destination — get a free test URL from [webhook.site](https://webhook.site), or point it at a Slack incoming webhook / Notion automation later.
+5. Click **Test Workflow** to run it once manually, then toggle **Active** to enable the schedule.
 
 | File | Source | Schedule | Targets |
 |---|---|---|---|
 | `workflows/agent1-shersial-producthunt.json` | Product Hunt RSS feed | every 6 hours | shersial.com (premium Webflow/design redesigns) |
 | `workflows/agent2-getdesign-reddit.json` | Reddit (r/saas, r/smallbusiness, r/startups) | every hour | getdesign.io (productized design subscriptions) |
-| `workflows/agent3-waraqlabs-upwork.json` | Upwork jobs RSS feed | every 3 hours | waraqlabs.com (custom mobile/web dev, tech-debt fixes) |
+| `workflows/agent3-waraqlabs-reddit.json` | Reddit r/forhire RSS feed | every 3 hours | waraqlabs.com (custom mobile/web dev, tech-debt fixes) |
+| `workflows/agent4-getdesign-cms.json` | Reddit (r/Webflow, r/Wordpress, r/shopify, r/squarespace, r/Wix, r/webdev, r/web_design) | every 2 hours | getdesign.io (CMS redesigns/migrations across any platform) |
 
-Each workflow follows the same pipeline: **fetch → deduplicate (persisted to a JSON file in the n8n data volume) → Gemini qualification & personalization → filter qualified leads → POST to webhook**.
+Each workflow follows the same pipeline: **fetch → deduplicate (persisted to a JSON file in the n8n data volume) → Gemini qualification & personalization → filter qualified leads → insert into Postgres `leads` table → POST to webhook**.
 
 ## Quick start (no Docker required)
 
@@ -69,3 +88,4 @@ docker compose up -d mcp-server
 - `mcp-server/` — Express-based placeholder MCP server
 - `.vscode/tasks.json` — VS Code tasks for install/start
 - `docker-compose.yml` — includes `mcp-server` service
+- `db/schema.sql` — Postgres `leads` table schema for the CRM

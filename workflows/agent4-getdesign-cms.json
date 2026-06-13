@@ -1,24 +1,24 @@
 {
-  "name": "Agent 3 - waraqlabs.com Upwork Scout",
+  "name": "Agent 4 - getdesign.io CMS Scout",
   "nodes": [
     {
       "parameters": {
         "rule": {
-          "interval": [{"field": "hours", "hoursInterval": 3}]
+          "interval": [{"field": "hours", "hoursInterval": 2}]
         }
       },
       "id": "schedule-trigger",
-      "name": "Every 3 Hours",
+      "name": "Every 2 Hours",
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.1,
       "position": [250, 300]
     },
     {
       "parameters": {
-        "url": "https://www.upwork.com/ab/feed/jobs/rss?q=react%20native%20rebuild%20OR%20fix%20buggy%20app%20OR%20technical%20debt&sort=recency"
+        "url": "https://www.reddit.com/r/Webflow+Wordpress+Drupal+joomla+shopify+squarespace+Wix+framer+weebly+woocommerce+BigCommerce+magento+Strapi+contentful+webdev+web_design/new/.rss"
       },
-      "id": "upwork-rss",
-      "name": "Fetch Upwork Jobs Feed",
+      "id": "cms-rss",
+      "name": "Fetch CMS Posts",
       "type": "n8n-nodes-base.rssFeedRead",
       "typeVersion": 1.1,
       "position": [450, 300]
@@ -26,10 +26,10 @@
     {
       "parameters": {
         "mode": "runOnceForAllItems",
-        "jsCode": "const staticData = $getWorkflowStaticData('global');\nif (!staticData.seenUpworkIds) staticData.seenUpworkIds = [];\nconst seen = staticData.seenUpworkIds;\n\nconst items = $input.all();\nconst newItems = [];\n\nfor (const item of items) {\n  const id = item.json.link || item.json.guid;\n  if (!id || seen.includes(id)) continue;\n  seen.push(id);\n  newItems.push({\n    json: {\n      id: id,\n      title: item.json.title || '',\n      content: item.json.contentSnippet || item.json.content || '',\n      link: item.json.link || '',\n      pubDate: item.json.pubDate || item.json.isoDate || ''\n    }\n  });\n}\n\nif (seen.length > 5000) staticData.seenUpworkIds = seen.slice(-5000);\n\nreturn newItems;"
+        "jsCode": "const staticData = $getWorkflowStaticData('global');\nif (!staticData.seenCmsIds) staticData.seenCmsIds = [];\nconst seen = staticData.seenCmsIds;\n\nconst items = $input.all();\nconst newItems = [];\n\nfor (const item of items) {\n  const id = item.json.link || item.json.guid;\n  if (!id || seen.includes(id)) continue;\n  seen.push(id);\n  newItems.push({\n    json: {\n      id: id,\n      title: item.json.title || '',\n      content: item.json.contentSnippet || item.json.content || '',\n      link: item.json.link || '',\n      pubDate: item.json.pubDate || item.json.isoDate || ''\n    }\n  });\n}\n\nif (seen.length > 5000) staticData.seenCmsIds = seen.slice(-5000);\n\nreturn newItems;"
       },
       "id": "dedup-code",
-      "name": "Deduplicate Jobs",
+      "name": "Deduplicate Posts",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [650, 300]
@@ -56,8 +56,8 @@
         },
         "options": {}
       },
-      "id": "if-new-jobs",
-      "name": "Have New Jobs?",
+      "id": "if-new-posts",
+      "name": "Have New Posts?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
       "position": [850, 300]
@@ -81,7 +81,7 @@
         "genericAuthType": "httpHeaderAuth",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ contents: [ { parts: [ { text: `You are a lead qualification and personalization engine for waraqlabs.com. waraqlabs.com provides transparent, scalable custom mobile and web development, fixing buggy MVPs, untangling technical debt, and building complex iOS and Android apps the right way. Ideal customer profile: a startup with a live MVP plagued by crashes, slow performance, fragile code, or mounting tech debt; a company missing engineering deadlines and hiring mid or senior full-stack or mobile engineers, signalling an immediate resource gap; a non-technical founder needing a reliable, transparent development partner to take over a broken project from a previous agency or freelancer. Evaluate this Upwork job posting. Title: ${$json.title} Description: ${$json.content} Link: ${$json.link} If this looks like a strong fit with active intent, output ONLY a valid JSON object (double-quoted keys and string values, no markdown fences) with fields: qualified set to true, score from 1 to 10, company_name if detectable else null, pain_point as one sentence describing the likely engineering issue, personalized_audit as a concise constructive roast plus pitch for waraqlabs.com transparent senior-led development in max 3 sentences ready to send, suggested_subject as an email subject line, missing_info as anything else needed or null. If this does not fit, output ONLY a JSON object with qualified set to false and no other fields.` } ] } ] }) }}",
+        "jsonBody": "={{ JSON.stringify({ contents: [ { parts: [ { text: `You are a lead qualification and personalization engine for getdesign.io. getdesign.io offers productized UI/UX design subscriptions and website builds/redesigns across any CMS or website builder, including Webflow, Framer, WordPress, Shopify, Squarespace, and Wix. Ideal customer profile: a business owner, founder, freelancer, or marketer posting about wanting to redesign their site, migrate to a different platform, hire a designer or developer for their website, frustrated with their current site's look or performance, or asking which platform to choose for a new site. Evaluate this Reddit post. Title: ${$json.title} Body: ${$json.content} If this person fits our ICP and has buying intent (not just a hobbyist asking a purely technical how-to question with no business context), output ONLY a valid JSON object (double-quoted keys and string values, no markdown fences) with fields: qualified set to true, score from 1 to 10, company_name if detectable else null, platform as the CMS or platform mentioned (e.g. Webflow, WordPress, Shopify, Squarespace, Wix, or unspecified), pain_point as one sentence, personalized_audit as a concise, helpful, non-salesy reply offering getdesign.io's design subscription as a solution in max 3 sentences ready to send, suggested_subject as an email subject line, missing_info as anything else needed or null. If this person does not fit, output ONLY a JSON object with qualified set to false and no other fields.` } ] } ] }) }}",
         "options": {}
       },
       "id": "gemini-api",
@@ -137,18 +137,38 @@
     },
     {
       "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO leads (agent, score, company_name, platform, pain_point, personalized_audit, suggested_subject, source_url) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) ON CONFLICT (source_url, agent) DO NOTHING",
+        "options": {
+          "queryReplacement": "={{ ['getdesign.io-cms', $json.score, $json.company_name, $json.platform, $json.pain_point, $json.personalized_audit, $json.suggested_subject, $('Deduplicate Posts').item.json.link] }}"
+        }
+      },
+      "id": "postgres-insert",
+      "name": "Insert Postgres Lead",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [1850, 100],
+      "credentials": {
+        "postgres": {
+          "id": "2",
+          "name": "Postgres CRM"
+        }
+      }
+    },
+    {
+      "parameters": {
         "method": "POST",
         "url": "https://webhook.site/your-unique-url",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ agent: 'waraqlabs.com', score: $json.score, company_name: $json.company_name, pain_point: $json.pain_point, personalized_audit: $json.personalized_audit, suggested_subject: $json.suggested_subject, source_url: $('Deduplicate Jobs').item.json.link }) }}",
+        "jsonBody": "={{ JSON.stringify({ agent: 'getdesign.io-cms', score: $json.score, company_name: $json.company_name, platform: $json.platform, pain_point: $json.pain_point, personalized_audit: $json.personalized_audit, suggested_subject: $json.suggested_subject, source_url: $('Deduplicate Posts').item.json.link }) }}",
         "options": {}
       },
       "id": "delivery-webhook",
       "name": "Post to Webhook",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [1850, 200]
+      "position": [2050, 100]
     },
     {
       "parameters": {
@@ -163,16 +183,16 @@
     }
   ],
   "connections": {
-    "Every 3 Hours": {
-      "main": [[ { "node": "Fetch Upwork Jobs Feed", "type": "main", "index": 0 } ]]
+    "Every 2 Hours": {
+      "main": [[ { "node": "Fetch CMS Posts", "type": "main", "index": 0 } ]]
     },
-    "Fetch Upwork Jobs Feed": {
-      "main": [[ { "node": "Deduplicate Jobs", "type": "main", "index": 0 } ]]
+    "Fetch CMS Posts": {
+      "main": [[ { "node": "Deduplicate Posts", "type": "main", "index": 0 } ]]
     },
-    "Deduplicate Jobs": {
-      "main": [[ { "node": "Have New Jobs?", "type": "main", "index": 0 } ]]
+    "Deduplicate Posts": {
+      "main": [[ { "node": "Have New Posts?", "type": "main", "index": 0 } ]]
     },
-    "Have New Jobs?": {
+    "Have New Posts?": {
       "main": [
         [{ "node": "Loop Over Items", "type": "main", "index": 0 }],
         []
