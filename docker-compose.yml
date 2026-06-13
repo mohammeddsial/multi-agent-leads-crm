@@ -43,6 +43,15 @@ services:
     restart: unless-stopped
     ports:
       - "3001:3001"
+    environment:
+      - PGHOST=postgres
+      - PGPORT=5432
+      - PGDATABASE=n8n
+      - PGUSER=n8n
+      - PGPASSWORD=${POSTGRES_PASSWORD}
+    depends_on:
+      postgres:
+        condition: service_healthy
     volumes:
       - ./mcp.config.js:/app/mcp.config.js:ro
 

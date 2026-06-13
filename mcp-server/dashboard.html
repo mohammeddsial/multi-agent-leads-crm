@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Lead CRM Dashboard</title>
+<style>
+  :root {
+    --bg: #0d1117; --panel: #161b22; --border: #30363d; --text: #e6edf3;
+    --muted: #8b949e; --accent: #2f81f7;
+    --new: #6e7681; --contacted: #d29922; --replied: #2f81f7; --won: #3fb950; --lost: #f85149;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+    font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+  header { padding: 20px 28px; border-bottom: 1px solid var(--border); display: flex;
+    align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+  h1 { font-size: 18px; margin: 0; }
+  .muted { color: var(--muted); }
+  .cards { display: flex; gap: 12px; flex-wrap: wrap; padding: 20px 28px; }
+  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 10px;
+    padding: 14px 18px; min-width: 110px; }
+  .card .n { font-size: 24px; font-weight: 700; }
+  .card .l { font-size: 12px; text-transform: uppercase; letter-spacing: .04em; }
+  .controls { padding: 0 28px 16px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  select, button { background: var(--panel); color: var(--text); border: 1px solid var(--border);
+    border-radius: 8px; padding: 7px 10px; font-size: 13px; cursor: pointer; }
+  table { width: calc(100% - 56px); margin: 0 28px 40px; border-collapse: collapse; }
+  th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--border);
+    vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; font-size: 12px; text-transform: uppercase;
+    letter-spacing: .04em; }
+  tr:hover td { background: #11161d; }
+  .badge { display: inline-block; padding: 2px 9px; border-radius: 20px; font-size: 12px;
+    font-weight: 600; color: #fff; }
+  .score { font-weight: 700; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .pitch { color: var(--muted); max-width: 420px; }
+  .pitch summary { cursor: pointer; color: var(--accent); }
+  .agent-tag { font-size: 12px; color: var(--muted); }
+  .statusSel { padding: 3px 6px; font-size: 12px; }
+  .empty { padding: 40px 28px; color: var(--muted); }
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>🎯 Lead CRM Dashboard</h1>
+    <div class="muted" id="subtitle">Loading…</div>
+  </div>
+  <button onclick="load()">↻ Refresh</button>
+</header>
+
+<div class="cards" id="cards"></div>
+
+<div class="controls">
+  <label class="muted">Agent</label>
+  <select id="agentFilter" onchange="load()"><option value="">All</option></select>
+  <label class="muted">Status</label>
+  <select id="statusFilter" onchange="load()">
+    <option value="">All</option>
+    <option value="new">new</option>
+    <option value="contacted">contacted</option>
+    <option value="replied">replied</option>
+    <option value="won">won</option>
+    <option value="lost">lost</option>
+  </select>
+</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>#</th><th>Agent</th><th>Score</th><th>Company</th><th>Pain / Pitch</th>
+      <th>Source</th><th>Status</th><th>When</th>
+    </tr>
+  </thead>
+  <tbody id="rows"></tbody>
+</table>
+<div class="empty" id="empty" style="display:none">No leads match these filters yet.</div>
+
+<script>
+const STATUS_COLORS = { new:'var(--new)', contacted:'var(--contacted)', replied:'var(--replied)', won:'var(--won)', lost:'var(--lost)' };
+const STATUSES = ['new','contacted','replied','won','lost'];
+
+function esc(s){ return (s==null?'':String(s)).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function when(ts){ const d=new Date(ts); return d.toLocaleString(); }
+
+async function loadSummary(){
+  const s = await (await fetch('/api/summary')).json();
+  document.getElementById('subtitle').textContent = `${s.total} leads total`;
+  const order = ['new','contacted','replied','won','lost'];
+  document.getElementById('cards').innerHTML =
+    `<div class="card"><div class="n">${s.total}</div><div class="l muted">Total</div></div>` +
+    order.map(st=>`<div class="card"><div class="n" style="color:${STATUS_COLORS[st]}">${s.byStatus[st]||0}</div><div class="l muted">${st}</div></div>`).join('');
+  const af = document.getElementById('agentFilter');
+  if (af.options.length <= 1) {
+    s.byAgent.forEach(a=>{ const o=document.createElement('option'); o.value=a.agent; o.textContent=`${a.agent} (${a.n})`; af.appendChild(o); });
+  }
+}
+
+async function load(){
+  await loadSummary();
+  const agent = document.getElementById('agentFilter').value;
+  const status = document.getElementById('statusFilter').value;
+  const qs = new URLSearchParams();
+  if (agent) qs.set('agent', agent);
+  if (status) qs.set('status', status);
+  const leads = await (await fetch('/api/leads?'+qs)).json();
+  const rows = document.getElementById('rows');
+  document.getElementById('empty').style.display = leads.length ? 'none' : 'block';
+  rows.innerHTML = leads.map(l=>{
+    const sel = `<select class="statusSel" onchange="setStatus(${l.id}, this.value)">` +
+      STATUSES.map(s=>`<option value="${s}" ${s===l.status?'selected':''}>${s}</option>`).join('') + `</select>`;
+    const badge = `<span class="badge" style="background:${STATUS_COLORS[l.status]||'#555'}">${esc(l.status)}</span>`;
+    const pitch = l.personalized_audit
+      ? `<details class="pitch"><summary>${esc(l.pain_point||'view pitch')}</summary>${esc(l.personalized_audit)}<br><em>Subject: ${esc(l.suggested_subject)}</em></details>`
+      : `<span class="pitch">${esc(l.pain_point||'')}</span>`;
+    return `<tr>
+      <td>${l.id}</td>
+      <td><span class="agent-tag">${esc(l.agent)}</span>${l.platform?`<br><span class="agent-tag">${esc(l.platform)}</span>`:''}</td>
+      <td class="score">${l.score??''}</td>
+      <td>${esc(l.company_name||'—')}</td>
+      <td>${pitch}</td>
+      <td><a href="${esc(l.source_url)}" target="_blank">open ↗</a></td>
+      <td>${badge}<br>${sel}</td>
+      <td class="muted">${when(l.created_at)}</td>
+    </tr>`;
+  }).join('');
+}
+
+async function setStatus(id, status){
+  await fetch(`/api/leads/${id}/status`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({status}) });
+  load();
+}
+
+load();
+setInterval(load, 30000); // auto-refresh every 30s
+</script>
+</body>
+</html>
