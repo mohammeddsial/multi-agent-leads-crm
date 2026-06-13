@@ -158,6 +158,21 @@
     {
       "parameters": {
         "method": "POST",
+        "url": "={{ $env.DISCORD_WEBHOOK_URL }}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ content: `🎯 **New lead — getdesign.io** (score ${$json.score}/10)\n**Company:** ${$json.company_name || 'N/A'}\n**Pain point:** ${$json.pain_point}\n**Suggested subject:** ${$json.suggested_subject}\n**Pitch:** ${$json.personalized_audit}\n🔗 ${$('Deduplicate Posts').item.json.permalink}` }) }}",
+        "options": {}
+      },
+      "id": "notify-discord",
+      "name": "Notify Discord",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [2050, 100]
+    },
+    {
+      "parameters": {
+        "method": "POST",
         "url": "https://webhook.site/your-unique-url",
         "sendBody": true,
         "specifyBody": "json",
@@ -168,7 +183,7 @@
       "name": "Post to Webhook",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [2050, 100]
+      "position": [2250, 100]
     },
     {
       "parameters": {
@@ -217,6 +232,9 @@
       ]
     },
     "Insert Postgres Lead": {
+      "main": [[ { "node": "Notify Discord", "type": "main", "index": 0 } ]]
+    },
+    "Notify Discord": {
       "main": [[ { "node": "Post to Webhook", "type": "main", "index": 0 } ]]
     },
     "Post to Webhook": {
