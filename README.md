@@ -64,8 +64,7 @@ For each file in `workflows/`:
 2. Click the **"Gemini Qualify & Personalize"** node and select the **Gemini API** credential (it will show a warning until you do).
 3. Click the **"Insert Postgres Lead"** node and select the **Postgres CRM** credential.
 4. The **"Notify Discord"** node needs no config — it reads `DISCORD_WEBHOOK_URL` from the environment.
-5. (Optional) The **"Post to Webhook"** node still points at `https://webhook.site/your-unique-url` as a secondary/placeholder destination — replace it with a real URL or remove the node if you only want Discord.
-6. Click **Test Workflow** to run it once manually, then toggle **Active**/**Publish** to enable the schedule.
+5. Click **Test Workflow** to run it once manually, then toggle **Active**/**Publish** to enable the schedule.
 
 | File | Source | Schedule | Targets |
 |---|---|---|---|
@@ -74,7 +73,7 @@ For each file in `workflows/`:
 | `workflows/agent3-waraqlabs-reddit.json` | Reddit r/forhire RSS feed | every 3 hours | waraqlabs.com (custom mobile/web dev, tech-debt fixes) |
 | `workflows/agent4-getdesign-cms.json` | Reddit (r/Webflow, r/Wordpress, r/shopify, r/squarespace, r/Wix, r/webdev, r/web_design) | every 2 hours | getdesign.io (CMS redesigns/migrations across any platform) |
 
-Each workflow follows the same pipeline: **fetch → deduplicate (persisted to a JSON file in the n8n data volume) → Gemini qualification & personalization → filter qualified leads → insert into Postgres `leads` table → notify Discord → POST to webhook**.
+Each workflow follows the same pipeline: **fetch → deduplicate (persisted to a JSON file in the n8n data volume) → Gemini qualification & personalization → filter qualified leads → insert into Postgres `leads` table → notify Discord**.
 
 ## Quick start (no Docker required)
 

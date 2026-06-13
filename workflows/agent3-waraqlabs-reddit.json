@@ -172,21 +172,6 @@
     },
     {
       "parameters": {
-        "method": "POST",
-        "url": "https://webhook.site/your-unique-url",
-        "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ agent: 'waraqlabs.com', score: $json.score, company_name: $json.company_name, pain_point: $json.pain_point, personalized_audit: $json.personalized_audit, suggested_subject: $json.suggested_subject, source_url: $('Deduplicate Jobs').item.json.link }) }}",
-        "options": {}
-      },
-      "id": "delivery-webhook",
-      "name": "Post to Webhook",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
-      "position": [2250, 100]
-    },
-    {
-      "parameters": {
         "amount": 7,
         "unit": "seconds"
       },
@@ -235,9 +220,6 @@
       "main": [[ { "node": "Notify Discord", "type": "main", "index": 0 } ]]
     },
     "Notify Discord": {
-      "main": [[ { "node": "Post to Webhook", "type": "main", "index": 0 } ]]
-    },
-    "Post to Webhook": {
       "main": [[ { "node": "Wait Before Next Request", "type": "main", "index": 0 } ]]
     },
     "Wait Before Next Request": {
