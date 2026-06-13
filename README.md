@@ -10,10 +10,16 @@ This repository includes a minimal MCP server scaffold in `mcp-server/`, plus a 
 docker compose up -d
 ```
 
-This starts `n8n-postgres`, `n8n` (UI at http://localhost:5678), and `mcp-server`. n8n reads `N8N_ENCRYPTION_KEY` from `.env` (not committed — generate your own with the snippet below if it doesn't exist):
+This starts `n8n-postgres`, `n8n` (UI at http://localhost:5678), and `mcp-server`. Both `docker-compose.yml` services read `N8N_ENCRYPTION_KEY` and `POSTGRES_PASSWORD` from `.env` (not committed — create your own with the snippet below if it doesn't exist):
 
 ```powershell
 [System.BitConverter]::ToString((New-Object byte[] 32 | ForEach-Object { (New-Object System.Security.Cryptography.RNGCryptoServiceProvider).GetBytes($_); $_ })).Replace('-','').ToLower()
+```
+
+Then create a `.env` file in the project root:
+```
+N8N_ENCRYPTION_KEY=<value from the snippet above>
+POSTGRES_PASSWORD=<choose a password without special shell/URL characters, e.g. alphanumeric only>
 ```
 
 ### 2. Create the Gemini API credential
@@ -28,16 +34,16 @@ In n8n: **Settings → Credentials → Add Credential → Header Auth**
 
 Each workflow writes qualified leads into a persistent `leads` table in the `n8n-postgres` database.
 
-1. Load the schema into the database:
-   ```powershell
-   docker exec -i n8n-postgres psql -U n8n -d n8n < db/schema.sql
+1. Load the schema into the database (run in `cmd.exe`, or use `Get-Content db/schema.sql | docker exec -i n8n-postgres psql -U n8n -d n8n` in PowerShell):
+   ```cmd
+   docker exec -i n8n-postgres psql -U n8n -d n8n < db\schema.sql
    ```
 2. In n8n: **Settings → Credentials → Add Credential → Postgres**
    - **Name:** `Postgres CRM` (must match exactly — the workflows reference it by this name)
    - **Host:** `postgres`
    - **Database:** `n8n`
    - **User:** `n8n`
-   - **Password:** `n8n_secure_password`
+   - **Password:** the `POSTGRES_PASSWORD` value from your `.env` file
    - **Port:** `5432`
    - **SSL:** disabled
 
