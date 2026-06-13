@@ -158,14 +158,14 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "https://webhook.site/your-unique-url",
+        "url": "={{ $env.DISCORD_WEBHOOK_URL }}",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ agent: 'getdesign.io-cms', score: $json.score, company_name: $json.company_name, platform: $json.platform, pain_point: $json.pain_point, personalized_audit: $json.personalized_audit, suggested_subject: $json.suggested_subject, source_url: $('Deduplicate Posts').item.json.link }) }}",
+        "jsonBody": "={{ JSON.stringify({ content: `🎯 **New lead — getdesign.io (CMS)** (score ${$json.score}/10)\n**Company:** ${$json.company_name || 'N/A'}\n**Platform:** ${$json.platform || 'N/A'}\n**Pain point:** ${$json.pain_point}\n**Suggested subject:** ${$json.suggested_subject}\n**Pitch:** ${$json.personalized_audit}\n🔗 ${$('Deduplicate Posts').item.json.link}` }) }}",
         "options": {}
       },
-      "id": "delivery-webhook",
-      "name": "Post to Webhook",
+      "id": "notify-discord",
+      "name": "Notify Discord",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [2050, 100]
@@ -212,11 +212,14 @@
     },
     "Is Qualified?": {
       "main": [
-        [{ "node": "Post to Webhook", "type": "main", "index": 0 }],
+        [{ "node": "Insert Postgres Lead", "type": "main", "index": 0 }],
         [{ "node": "Wait Before Next Request", "type": "main", "index": 0 }]
       ]
     },
-    "Post to Webhook": {
+    "Insert Postgres Lead": {
+      "main": [[ { "node": "Notify Discord", "type": "main", "index": 0 } ]]
+    },
+    "Notify Discord": {
       "main": [[ { "node": "Wait Before Next Request", "type": "main", "index": 0 } ]]
     },
     "Wait Before Next Request": {
